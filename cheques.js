@@ -7,7 +7,7 @@ const CDEF={moneda:'cheques',voz:2,otro:1,asertivo:1,situacion:3};
 S.cheques=Object.assign({},CDEF,S.cheques||{});
 let hucha=store.get('cp_hucha',{ganado:0,entregado:0,numero:0});
 let sesionCheques=0;
-const BUENAS=['asertivo','preguntar','entiende','perdona','saludo','gesto','adulto','alejarse'];
+const BUENAS=['asertivo','preguntar','entiende','perdona','saludo','gesto','adulto','alejarse','empatico','pregunta'];
 const C=()=>S.cheques;
 const mon=()=>C().moneda||'cheques';
 
