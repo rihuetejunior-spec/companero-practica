@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Compañero de práctica</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f4f7f5; --card:#ffffff; --ink:#23312b; --muted:#5d6f66; --line:#dfe7e2;
+  --accent:#3f7d6b; --accent2:#e8f3ef; --warm:#f6efe3; --mic:#d9534f; --star:#e0a526;
+  --asert:#3f7d6b; --radius:18px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{font-family:Nunito,system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--bg);color:var(--ink);font-size:19px;line-height:1.4;display:flex;flex-direction:column;min-height:100vh}
+button{font:inherit;cursor:pointer;border:none;border-radius:14px}
+.hidden{display:none!important}
+
+header{display:flex;align-items:center;gap:14px;padding:10px 18px;background:#fff;border-bottom:1px solid var(--line)}
+.brand{font-weight:800;font-size:20px;white-space:nowrap}
+#progress{flex:1;display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
+.pstep{font-size:22px;opacity:.35;padding:2px 6px;border-radius:10px}
+.pstep.done{opacity:.7}
+.pstep.now{opacity:1;background:var(--accent2);outline:2px solid var(--accent)}
+.hdr-btns{display:flex;align-items:center;gap:10px}
+#counters{font-weight:700;color:var(--muted);white-space:nowrap}
+.soft{background:var(--accent2);color:var(--accent);padding:9px 16px;font-weight:700}
+.soft:hover{filter:brightness(.97)}
+.icon{background:transparent;font-size:24px;padding:6px 8px;position:relative}
+.icon .ring{position:absolute;inset:0;border-radius:50%;border:3px solid var(--accent);clip-path:inset(100% 0 0 0);transition:none}
+.icon.holding .ring{clip-path:inset(0 0 0 0);transition:clip-path 1.4s linear}
+
+main{flex:1;display:grid;grid-template-columns:minmax(300px,1fr) minmax(340px,1.15fr);gap:18px;padding:18px;max-width:1200px;width:100%;margin:0 auto}
+@media (max-width:820px){main{grid-template-columns:1fr}}
+
+#stage{background:linear-gradient(#eaf4f0,#f7faf8);border-radius:var(--radius);display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:16px;position:relative;min-height:420px}
+.bubble{background:#fff;border-radius:22px;padding:16px 20px;font-size:22px;font-weight:600;box-shadow:0 4px 16px rgba(0,0,0,.07);max-width:95%;position:relative;margin-bottom:14px;min-height:60px}
+.bubble:after{content:"";position:absolute;bottom:-14px;left:50%;margin-left:-14px;border:14px solid transparent;border-top-color:#fff;border-bottom:0}
+#avatarWrap{width:min(300px,80%)}
+#av{width:100%;height:auto;display:block}
+#avatarName{font-weight:800;font-size:22px;margin-top:6px}
+#eyes{transform-box:fill-box;transform-origin:center;transition:transform .08s}
+#eyes.blink{transform:scaleY(.1)}
+
+#panel{background:var(--card);border-radius:var(--radius);padding:22px;box-shadow:0 2px 10px rgba(0,0,0,.04);display:flex;flex-direction:column}
+.screen{display:flex;flex-direction:column;gap:16px;flex:1}
+h1{font-size:30px;margin:0}
+h2{font-size:24px;margin:0}
+.muted{color:var(--muted)}
+.big{background:var(--accent);color:#fff;font-size:24px;font-weight:800;padding:16px 26px;align-self:flex-start}
+.big:hover{filter:brightness(1.05)}
+.agenda{display:flex;flex-direction:column;gap:8px}
+.agenda div{display:flex;gap:12px;align-items:center;background:var(--bg);border-radius:12px;padding:10px 14px}
+.agenda .ic{font-size:26px}
+.introbox{background:var(--warm);border-radius:16px;padding:18px;font-size:21px}
+.tag{display:inline-block;background:var(--accent2);color:var(--accent);font-weight:700;border-radius:999px;padding:4px 12px;font-size:16px}
+
+.hint{font-size:20px;font-weight:700;color:var(--accent);min-height:1em}
+.sbubble{align-self:flex-end;background:var(--accent);color:#fff;border-radius:20px 20px 4px 20px;padding:12px 18px;font-size:20px;max-width:90%}
+.sbubble small{display:block;opacity:.8;font-size:14px}
+#micZone{display:flex;align-items:center;gap:16px}
+.mic{width:84px;height:84px;border-radius:50%;font-size:38px;background:#f1f1f1;flex:none;position:relative}
+.mic.on{background:var(--mic);color:#fff;animation:pulse 1.4s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(217,83,79,.5)}70%{box-shadow:0 0 0 22px rgba(217,83,79,0)}100%{box-shadow:0 0 0 0 rgba(217,83,79,0)}}
+#micStatus{font-size:18px;color:var(--muted)}
+#interim{font-size:20px;font-style:italic;min-height:1.4em;color:var(--ink)}
+.cards{display:flex;flex-wrap:wrap;gap:10px}
+.cardlbl{width:100%;font-size:15px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.card{background:#fff;border:2px solid var(--line);padding:12px 16px;font-size:19px;font-weight:600;text-align:left}
+.card:hover{border-color:var(--accent);background:var(--accent2)}
+.card.pass{border-style:dashed;color:var(--muted)}
+.card.idea{cursor:default;background:var(--bg)}
+.card.idea:hover{border-color:var(--line);background:var(--bg)}
+#typeForm{display:flex;gap:8px}
+#typeForm input{flex:1;font:inherit;padding:12px 14px;border:2px solid var(--line);border-radius:14px}
+#typeForm button{background:var(--accent2);color:var(--accent);font-weight:700;padding:0 18px}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:auto}
+
+.feel{display:flex;gap:12px;flex-wrap:wrap}
+.feel button{background:var(--bg);font-size:18px;padding:12px 16px;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:96px;border:2px solid transparent}
+.feel button span{font-size:38px}
+.feel button.sel{border-color:var(--accent);background:var(--accent2)}
+.tip{background:var(--accent2);border-radius:16px;padding:16px 18px;font-size:21px}
+.summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px}
+.summary div{background:var(--bg);border-radius:14px;padding:14px;text-align:center}
+.summary b{display:block;font-size:32px}
+
+.overlay{position:fixed;inset:0;background:rgba(244,247,245,.97);z-index:50;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:24px;padding:20px}
+.breath{width:200px;height:200px;border-radius:50%;background:radial-gradient(#bfe0d4,#7fb8a6);animation:breath 8s ease-in-out infinite;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:22px}
+@keyframes breath{0%,100%{transform:scale(.7)}50%{transform:scale(1.1)}}
+#breathTxt{font-size:24px;font-weight:700;color:var(--accent)}
+
+#teacher{align-items:stretch;justify-content:flex-start;overflow:auto;background:rgba(35,49,43,.55)}
+.tpanel{background:#fff;border-radius:20px;max-width:900px;width:100%;margin:0 auto;padding:24px;font-size:17px}
+.tpanel h2{margin-bottom:6px}
+.tgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px 20px;margin:16px 0}
+.tgrid label{display:flex;flex-direction:column;gap:4px;font-weight:700}
+.tgrid label.chk{flex-direction:row;align-items:center;gap:8px;font-weight:600}
+.tgrid input[type=text],.tgrid select{font:inherit;padding:8px 10px;border:2px solid var(--line);border-radius:10px;font-weight:400}
+.tgrid small{font-weight:400;color:var(--muted)}
+fieldset{border:2px solid var(--line);border-radius:14px;padding:12px 16px;margin:0 0 14px}
+legend{font-weight:800;padding:0 6px}
+.sclist label{display:flex;gap:8px;align-items:center;padding:4px 0}
+.tbtns{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}
+.tbtns button{background:var(--accent2);color:var(--accent);font-weight:700;padding:10px 14px}
+.tbtns button.main{background:var(--accent);color:#fff}
+.tbtns button.danger{background:#fbe9e8;color:#a33}
+.logwrap{max-height:340px;overflow:auto;border:1px solid var(--line);border-radius:12px}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{background:var(--bg);position:sticky;top:0}
+.c-asertivo{color:#2d7a5f;font-weight:700}.c-agresivo{color:#b33;font-weight:700}.c-pasivo,.c-pasar{color:#8a6d1f;font-weight:700}
+.note{background:var(--warm);border-radius:12px;padding:10px 14px;font-size:15px}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:12px 20px;border-radius:14px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:99;max-width:90%;font-size:17px}
+#toast.show{opacity:1}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">🗣️ Compañero de práctica</div>
+  <div id="progress"></div>
+  <div class="hdr-btns">
+    <span id="counters"></span>
+    <button id="btnPause" class="soft">🌿 Descanso</button>
+    <button id="btnGear" class="icon" title="Mantén pulsado para abrir el panel del profesor" aria-label="Panel del profesor">⚙️<span class="ring"></span></button>
+  </div>
+</header>
+
+<main>
+  <section id="stage">
+    <div id="bubble" class="bubble hidden"></div>
+    <div id="avatarWrap">
+      <svg id="av" viewBox="0 0 260 300" aria-hidden="true">
+        <path id="shirt" d="M34 300 Q44 238 130 232 Q216 238 226 300 Z" fill="#4f7cac"/>
+        <path d="M104 236 L130 262 L156 236" fill="none" stroke="#fff" stroke-width="6" stroke-linejoin="round"/>
+        <rect x="113" y="212" width="34" height="30" rx="10" fill="#e3ab84"/>
+        <ellipse cx="50" cy="150" rx="13" ry="18" fill="#eab894"/>
+        <ellipse cx="210" cy="150" rx="13" ry="18" fill="#eab894"/>
+        <ellipse cx="130" cy="145" rx="80" ry="86" fill="#f3c6a1"/>
+        <path id="hair" d="M50 138 Q42 62 112 52 Q150 38 186 60 Q220 84 211 138 Q200 102 172 92 Q150 108 122 96 Q86 106 64 122 Z" fill="#5a3b22"/>
+        <circle id="chL" cx="86" cy="182" r="12" fill="#f0907f" opacity=".3"/>
+        <circle id="chR" cx="174" cy="182" r="12" fill="#f0907f" opacity=".3"/>
+        <g id="eyes">
+          <ellipse cx="100" cy="150" rx="10" ry="12" fill="#fff"/>
+          <circle cx="101" cy="152" r="6.5" fill="#2b2b2b"/>
+          <ellipse cx="160" cy="150" rx="10" ry="12" fill="#fff"/>
+          <circle cx="161" cy="152" r="6.5" fill="#2b2b2b"/>
+        </g>
+        <path id="brL" d="M84 124 Q100 118 116 124" stroke="#4a2f1a" stroke-width="6" fill="none" stroke-linecap="round"/>
+        <path id="brR" d="M144 124 Q160 118 176 124" stroke="#4a2f1a" stroke-width="6" fill="none" stroke-linecap="round"/>
+        <path d="M130 158 Q123 174 133 177" stroke="#d99a74" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <path id="mouth" d="M112 200 Q130 210 148 200" stroke="#7a3b2e" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        <ellipse id="mouthO" cx="130" cy="204" rx="13" ry="5" fill="#7a3b2e" opacity="0"/>
+      </svg>
+    </div>
+    <div id="avatarName">Leo</div>
+  </section>
+
+  <section id="panel">
+    <!-- INICIO -->
+    <div id="scrHome" class="screen">
+      <h1 id="homeHello">¡Hola!</h1>
+      <p class="muted" id="homeSub">Vamos a practicar unas situaciones con un compañero. Puedes hablar, tocar una tarjeta o escribir. Si necesitas parar, pulsa <b>🌿 Descanso</b>.</p>
+      <div class="agenda" id="agenda"></div>
+      <div id="supportNote" class="note hidden"></div>
+      <button class="big" id="btnStart">▶ Empezar</button>
+    </div>
+
+    <!-- PRESENTACIÓN DE LA SITUACIÓN -->
+    <div id="scrIntro" class="screen hidden">
+      <span class="tag" id="introN"></span>
+      <h2 id="introTitle"></h2>
+      <div class="muted" id="introSkill"></div>
+      <div class="introbox" id="introText"></div>
+      <div class="row" style="margin-top:0">
+        <button class="soft" id="btnReadIntro">🔊 Leer en voz alta</button>
+      </div>
+      <button class="big" id="btnGo">▶ Empezar esta situación</button>
+    </div>
+
+    <!-- CONVERSACIÓN -->
+    <div id="scrPlay" class="screen hidden">
+      <div id="hint" class="hint"></div>
+      <div id="studentBubble" class="sbubble hidden"></div>
+      <div id="micZone">
+        <button id="btnMic" class="mic" aria-label="Hablar">🎤</button>
+        <div id="micStatus"></div>
+      </div>
+      <div id="interim"></div>
+      <div id="cards" class="cards"></div>
+      <form id="typeForm" autocomplete="off">
+        <input id="typeInput" placeholder="O escríbelo aquí…">
+        <button type="submit">Enviar</button>
+      </form>
+      <div class="row">
+        <button id="btnRepeat" class="soft">🔁 Que lo repita</button>
+      </div>
+    </div>
+
+    <!-- CIERRE DE CADA SITUACIÓN -->
+    <div id="scrDebrief" class="screen hidden">
+      <h2>¡Muy bien! 👏</h2>
+      <div class="tip" id="tipText"></div>
+      <div><b>¿Cómo te has sentido?</b></div>
+      <div class="feel" id="feel">
+        <button data-f="bien"><span>😊</span>Bien</button>
+        <button data-f="normal"><span>😐</span>Normal</button>
+        <button data-f="nervioso"><span>😟</span>Nervioso</button>
+        <button data-f="enfadado"><span>😠</span>Enfadado</button>
+        <button data-f="triste"><span>😢</span>Triste</button>
+      </div>
+      <button class="big" id="btnNext">Siguiente ▶</button>
+    </div>
+
+    <!-- FINAL -->
+    <div id="scrEnd" class="screen hidden">
+      <h1>¡Lo has hecho genial! 🌟</h1>
+      <p class="muted">Esto es lo que hemos practicado hoy:</p>
+      <div class="summary" id="summary"></div>
+      <button class="big" id="btnHome">Volver al inicio</button>
+    </div>
+  </section>
+</main>
+
+<!-- DESCANSO -->
+<div id="pauseOverlay" class="overlay hidden">
+  <div class="breath" id="breathCircle"></div>
+  <div id="breathTxt">Respira despacio…</div>
+  <p class="muted" style="text-align:center;max-width:480px">Puedes quedarte aquí el tiempo que quieras. Nadie tiene prisa.</p>
+  <button class="big" id="btnResume" style="align-self:center">Volver cuando quiera</button>
+</div>
+
+<!-- PANEL DEL PROFESOR -->
+<div id="teacher" class="overlay hidden">
+  <div class="tpanel">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+      <h2>⚙️ Panel del profesor</h2>
+      <button class="soft" id="tClose">Cerrar ✕</button>
+    </div>
+    <p class="muted" style="margin:0">Se abre manteniendo pulsado el engranaje. Los ajustes y el registro se guardan solo en este navegador.</p>
+
+    <div class="tgrid">
+      <label>Nombre del alumno<input type="text" id="tNombre"></label>
+      <label>Nombre del compañero virtual<input type="text" id="tAvatar"></label>
+      <label>Voz del compañero<select id="tVoz"></select><small>En Chromebook suele ir mejor «Google español».</small></label>
+      <label>Velocidad: <span id="tVelV"></span><input type="range" id="tVel" min="0.7" max="1.3" step="0.05"></label>
+      <label>Tono: <span id="tTonoV"></span><input type="range" id="tTono" min="0.8" max="1.6" step="0.05"><small>Un tono algo alto suena más a chico joven.</small></label>
+      <label>Aspecto
+        <select id="tLook">
+          <option value="a">Pelo castaño · camiseta azul</option>
+          <option value="b">Pelo negro · camiseta verde</option>
+          <option value="c">Pelo rubio · camiseta naranja</option>
+          <option value="d">Pelo rizado · camiseta morada</option>
+        </select>
+      </label>
+      <label>Forma de responder (nivel de habla)
+        <select id="tModo">
+          <option value="tarjetas">1 · Solo tarjetas y escribir (sin micro)</option>
+          <option value="mixto">2 · Micro + tarjetas (recomendado al principio)</option>
+          <option value="voz">3 · Hablar (las tarjetas son solo ideas para leer en voz alta)</option>
+        </select>
+        <small>Gradúalo con Orientación según avance el alumno.</small>
+      </label>
+      <label>Intensidad en «Me dice cosas feas»
+        <select id="tInt"><option value="suave">Suave</option><option value="medio">Media</option></select>
+      </label>
+      <label class="chk"><input type="checkbox" id="tAuto"> Escuchar automáticamente tras hablar el compañero</label>
+      <label class="chk"><input type="checkbox" id="tTrans"> Mostrar en pantalla lo que se le entiende</label>
+      <label class="chk"><input type="checkbox" id="tEscr"> Permitir responder escribiendo</label>
+      <label>Si tarda en contestar, el compañero le interrumpe y le pregunta
+        <select id="tEspera">
+          <option value="0">No interrumpir nunca</option>
+          <option value="3">A los 3 segundos</option>
+          <option value="5">A los 5 segundos</option>
+          <option value="8">A los 8 segundos</option>
+          <option value="12">A los 12 segundos</option>
+        </select>
+        <small>Le dice «¿Qué quieres decir?» (u otra pregunta parecida) una vez por turno.</small>
+      </label>
+      <label class="chk"><input type="checkbox" id="tCont"> Mostrar estrellas y contador de veces que habla</label>
+      <label class="chk"><input type="checkbox" id="tLocal"> Reconocer la voz en el propio equipo (si Chrome lo admite)</label>
+    </div>
+
+    <fieldset>
+      <legend>Situaciones de la sesión (en este orden)</legend>
+      <div class="sclist" id="tScen"></div>
+    </fieldset>
+
+    <div class="tbtns">
+      <button class="main" id="tSave">Guardar ajustes</button>
+      <button id="tTestVoice">🔊 Probar voz</button>
+      <button id="tTestMic">🎤 Probar micrófono</button>
+      <button id="tLocalCheck">Comprobar reconocimiento local</button>
+    </div>
+    <div class="note" id="tMsg">Nota: el reconocimiento de voz de Chrome normalmente envía el audio a los servidores de Google para transcribirlo. Esta página no guarda audio; solo guarda el texto en este navegador.</div>
+
+    <h2 style="margin-top:22px">📋 Registro de sesiones</h2>
+    <div class="tbtns">
+      <select id="tSess" style="font:inherit;padding:8px;border-radius:10px;border:2px solid var(--line)"></select>
+      <button id="tCsv">⬇ Descargar CSV</button>
+      <button id="tCopy">Copiar</button>
+      <button class="danger" id="tDel">Borrar todo el registro</button>
+    </div>
+    <div id="tStats" class="muted" style="margin-bottom:8px"></div>
+    <div class="logwrap"><table><thead><tr><th>Hora</th><th>Situación</th><th>Dijo el compañero</th><th>Respuesta</th><th>Canal</th><th>Tipo</th><th>Seg.</th></tr></thead><tbody id="tLog"></tbody></table></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* =========================================================
+   CONTENIDO: situaciones
+   cards: [texto, categoría]. Se añade siempre «Prefiero no decir nada».
+   kw: palabras clave por categoría (se comprueban en orden).
+   react: respuesta del compañero según categoría (otro = cualquier otra).
+   ========================================================= */
+const AGR=['callate','tonto','tonta','idiota','imbecil','estupido','estupida','burro','burra','pesado tu','raro tu','tu mas','tu si','feo tu','fea tu','ladron','ladrona','inutil','pringado','pringada','gilipollas','mierda','subnormal','asqueroso','asquerosa','bobo','boba','la tuya'];
+const INS_KW={
+  asertivo:['no me gusta','no me hables','no me digas','para','parad','dejame','dejalo','no me llames','eso no','no esta bien','me molesta','me sienta mal','no lo digas','basta','no tiene gracia','no me trates','respeta','respetame'],
+  adulto:['profe','profesor','profesora','tutor','tutora','se lo digo','se lo voy a decir','se lo dire','adulto','director','directora','orientadora','orientador'],
+  alejarse:['me voy','paso de ti','paso','adios','me largo','con otros','me marcho','te dejo'],
+  agresivo:AGR,
+  pasivo:['vale','bueno','ya','vale ya','lo siento','perdon']
+};
+const insReact=(agrSay)=>({
+  asertivo:{say:'Vale... perdona. No debería haberte dicho eso.',mood:'arrepentido'},
+  alejarse:{say:'¡Eh, espera! Vale, vale, me he pasado.',mood:'arrepentido'},
+  adulto:{say:'No, no hace falta... Perdona, no lo diré más.',mood:'arrepentido'},
+  agresivo:{say:agrSay,mood:'enfadado'},
+  pasivo:{say:'¿Ves? Ni me contestas.',mood:'burlon'},
+  pasar:{say:'¿Ves? Ni me contestas.',mood:'burlon'},
+  otro:{say:'Bueno, vale, lo que tú digas.',mood:'neutral'}
+});
+const insCards=(agrCard)=>[['No me gusta que me digas eso','asertivo'],['Para, por favor','asertivo'],['Me voy con otros compañeros','alejarse'],['Se lo voy a decir al profesor','adulto'],[agrCard,'agresivo']];
+
+const SCEN=[
+{id:'conocer',icono:'👋',titulo:'Nos conocemos',habilidad:'Saludar y contar algo de ti',
+ intro:'{avatar} es un compañero de clase. Solo quiere conocerte un poco. Puedes hablar, tocar una tarjeta o escribir. Todas las formas valen.',
+ tip:'Para empezar a hablar con alguien basta con un «hola». Después puedes contar algo que te guste.',
+ inicio:'a',pasos:{
+  a:{say:'¡Hola, {nombre}! Soy {avatar}. ¿Me dices hola?',mood:'contento',hint:'Saluda a {avatar}.',
+     cards:[['Hola','saludo'],['👋 Saludar con la mano','gesto']],kw:{saludo:['hola','buenas','hey','que tal','buenos dias','ey']},
+     react:{saludo:{say:'¡Hola! Qué bien oírte.',mood:'contento'},gesto:{say:'¡Te he visto saludar! Genial.',mood:'contento'},otro:{say:'¡Te he oído! Encantado.',mood:'contento'}},next:'b'},
+  b:{say:'A mí me encanta el fútbol. ¿Y a ti qué te gusta hacer?',mood:'neutral',hint:'Cuéntale algo que te guste.',
+     cards:[['Los videojuegos'],['Dibujar'],['Los animales'],['Leer'],['Los dinosaurios'],['La música']],
+     react:{otro:{say:'¿{resp}? ¡Qué interesante! Algún día me lo enseñas.',mood:'contento'}},next:'c'},
+  c:{say:'¿Y cuál es tu asignatura favorita?',mood:'neutral',hint:'¿Qué asignatura te gusta más?',
+     cards:[['Matemáticas'],['Ciencias'],['Educación Física'],['Plástica'],['Inglés'],['Ninguna']],
+     react:{otro:{say:'¡{resp}! Me parece muy bien.',mood:'contento'}},next:'d'},
+  d:{say:'Me ha gustado mucho hablar contigo. ¿Nos vemos en el recreo?',mood:'contento',hint:'Despídete de {avatar}.',
+     cards:[['Sí, hasta luego'],['Vale'],['Adiós']],
+     react:{otro:{say:'¡Genial! Hasta luego, {nombre}.',mood:'contento'}},next:null}
+ }},
+
+{id:'repetir',icono:'🔊',titulo:'¿Me lo repites?',habilidad:'Repetir y hablar un poco más alto',
+ intro:'Hoy hay mucho ruido en el patio. A veces {avatar} no te va a oír bien y te pedirá que lo repitas. No pasa nada: puedes repetirlo un poquito más alto o señalar la tarjeta.',
+ tip:'Si alguien no te oye, no pasa nada: puedes repetirlo un poco más alto o señalar lo que quieres decir.',
+ inicio:'a',pasos:{
+  a:{say:'¿Cómo te llamas?',mood:'neutral',hint:'Dile tu nombre.',cards:[['Me llamo {nombre}'],['{nombre}']],
+     react:{otro:{say:'¿Cómo? Perdona, hay mucho ruido. ¿Me lo repites un poco más alto?',mood:'confuso'},pasar:{say:'Vale, ya me lo dirás. Oye, perdona, ¿me lo dices ahora?',mood:'confuso'}},next:'b'},
+  b:{say:'',hint:'Repíteselo un poquito más alto.',cards:[['Me llamo {nombre}'],['{nombre}']],
+     react:{otro:{say:'¡Ahora sí! Encantado, {nombre}.',mood:'contento'},pasar:{say:'Vale, no pasa nada. Ya te he leído el nombre en la mochila: ¡{nombre}!',mood:'contento'}},next:'c'},
+  c:{say:'¿Me pasas una pelota? ¿Quieres la roja o la azul?',mood:'neutral',hint:'Elige una pelota.',cards:[['La roja'],['La azul']],
+     react:{otro:{say:'¿La qué? No te he oído bien.',mood:'confuso'}},next:'d'},
+  d:{say:'',hint:'Repítelo un poquito más alto.',cards:[['La roja'],['La azul']],
+     react:{otro:{say:'¡Vale, gracias! Ahora sí te he oído.',mood:'contento'}},next:null}
+ }},
+
+{id:'frases',icono:'🧩',titulo:'Frases con doble sentido',habilidad:'Preguntar cuando no entiendes algo',
+ intro:'Mucha gente usa frases que no significan lo que dicen las palabras. {avatar} va a decir algunas. Si no las entiendes, ¡puedes preguntarle!',
+ tip:'Si no entiendes lo que alguien quiere decir, puedes preguntar: «¿Qué quieres decir?». Preguntar está muy bien.',
+ inicio:'a',pasos:{
+  a:{say:'¡Uf! Con el examen de mañana estoy que me subo por las paredes.',mood:'sorprendido',hint:'¿Qué crees que quiere decir?',
+     cards:[['¿Qué quieres decir?','preguntar'],['¿Estás nervioso?','entiende'],['¿Sabes escalar paredes?','literal']],
+     kw:{entiende:['nervioso','agobiado','preocupado','estresado','nervios'],literal:['escalar','trepar','paredes','pared','spiderman'],preguntar:['que quieres decir','que significa','no entiendo','no lo entiendo','que','como','eh']},
+     react:{preguntar:{say:'Quiero decir que estoy muy nervioso. ¡No trepo de verdad! Gracias por preguntarme.',mood:'contento'},
+            entiende:{say:'¡Exacto! Estoy muy nervioso. Lo has pillado.',mood:'contento'},
+            literal:{say:'¡Jaja, no! No escalo de verdad. Es una forma de decir que estoy muy nervioso.',mood:'contento'},
+            otro:{say:'Es una forma de hablar: significa que estoy muy nervioso.',mood:'neutral'}},next:'b'},
+  b:{say:'¿Te ayudo con los deberes? Para mí eso es pan comido.',mood:'contento',hint:'¿Qué crees que quiere decir?',
+     cards:[['¿Qué quieres decir?','preguntar'],['¿Es fácil para ti?','entiende'],['¿Te comes el pan?','literal']],
+     kw:{entiende:['facil','sencillo','chupado'],literal:['pan','comer','comes','hambre','bocadillo'],preguntar:['que quieres decir','que significa','no entiendo','no lo entiendo','que','como','eh']},
+     react:{preguntar:{say:'Significa que es muy fácil. ¡Bien hecho por preguntar!',mood:'contento'},
+            entiende:{say:'¡Eso es! Quiere decir que es muy fácil.',mood:'contento'},
+            literal:{say:'¡Jaja, no hay pan! «Pan comido» significa que es muy fácil.',mood:'contento'},
+            otro:{say:'«Pan comido» quiere decir que es muy fácil.',mood:'neutral'}},next:'c'},
+  c:{say:'¿Que mañana no hay clase? ¡Venga ya, me estás tomando el pelo!',mood:'burlon',hint:'¿Qué crees que quiere decir?',
+     cards:[['¿Qué quieres decir?','preguntar'],['¿Crees que es una broma?','entiende'],['¡Yo no te he tocado el pelo!','literal']],
+     kw:{entiende:['broma','mentira','engañando','enganando','en serio','de verdad'],literal:['pelo','tocar','tocado','peinar'],preguntar:['que quieres decir','que significa','no entiendo','no lo entiendo','que','como','eh']},
+     react:{preguntar:{say:'Quiero decir que creo que me estás gastando una broma.',mood:'contento'},
+            entiende:{say:'¡Exacto! Pienso que es una broma.',mood:'contento'},
+            literal:{say:'¡Jaja, ya sé que no me has tocado! «Tomar el pelo» es gastar una broma.',mood:'contento'},
+            otro:{say:'«Tomar el pelo» significa gastar una broma.',mood:'neutral'}},next:null}
+ }},
+
+{id:'equivoca',icono:'❓',titulo:'Se equivoca',habilidad:'Corregir a alguien con respeto',
+ intro:'{avatar} se va a equivocar en algunas cosas. Vamos a practicar cómo decírselo sin que se sienta mal.',
+ tip:'Cuando alguien se equivoca, puedes decírselo con amabilidad: «Creo que es…» o «Me parece que eso no es así».',
+ inicio:'a',pasos:{
+  a:{say:'Estoy haciendo los deberes de mates. Siete por ocho... cincuenta y cuatro. ¡Hecho!',mood:'contento',hint:'¿Está bien la cuenta?',
+     cards:[['Creo que es cincuenta y seis','asertivo'],['Te has equivocado, revísalo','asertivo'],['¡Qué burro, eso está fatal!','agresivo']],
+     kw:{agresivo:AGR.concat(['fatal']),asertivo:['creo','me parece','no es','cincuenta y seis','56','revisa','revisalo','repasalo','te has equivocado','equivocado','esta mal','no esta bien','mira'],pasivo:['vale','bien','si','muy bien','genial']},
+     react:{asertivo:{say:'¿Ah, sí? A ver... ¡es verdad, cincuenta y seis! Gracias por avisarme.',mood:'contento'},
+            agresivo:{say:'Vale, me había equivocado, pero no hace falta llamarme así. Me habría gustado que me lo dijeras de otra forma.',mood:'triste'},
+            pasivo:{say:'Pues mañana lo entrego así. ¡Seguro que está bien!',mood:'contento'},
+            pasar:{say:'Pues mañana lo entrego así. ¡Seguro que está bien!',mood:'contento'},
+            otro:{say:'Mmm... ¿lo reviso? Siete por ocho... ¡cincuenta y seis! Me había equivocado.',mood:'confuso'}},next:'b'},
+  b:{say:'Por cierto, la capital de Francia es Roma, ¿verdad?',mood:'neutral',hint:'¿Tiene razón?',
+     cards:[['No, es París','asertivo'],['Me parece que es París','asertivo'],['Sí','pasivo'],['¿En serio no lo sabes? Qué tonto','agresivo']],
+     kw:{agresivo:AGR,asertivo:['paris','no','me parece','creo'],pasivo:['si','vale','claro']},
+     react:{asertivo:{say:'¡Anda, es verdad! Roma es la capital de Italia. Qué lío tengo.',mood:'confuso'},
+            agresivo:{say:'Oye, todo el mundo se equivoca alguna vez...',mood:'triste'},
+            pasivo:{say:'Genial, pues lo pongo así en el examen.',mood:'contento'},
+            pasar:{say:'Bueno, lo pongo así en el examen.',mood:'contento'},
+            otro:{say:'Mmm, ¿no es Roma? Lo miraré en el libro.',mood:'confuso'}},next:'c'},
+  c:{say:'Uy, te he cogido el lápiz. Pensaba que era el mío.',mood:'sorprendido',hint:'Ese lápiz es tuyo.',
+     cards:[['Ese lápiz es mío, ¿me lo devuelves?','asertivo'],['No pasa nada, devuélvemelo cuando acabes','asertivo'],['¡Ladrón!','agresivo']],
+     kw:{agresivo:AGR,asertivo:['mio','devuelve','devuelves','devolver','devuelvemelo','no pasa nada','dame','me lo das']},
+     react:{asertivo:{say:'¡Ay, perdona! Toma, aquí lo tienes.',mood:'arrepentido'},
+            agresivo:{say:'¡Eh, que no lo he hecho a propósito! Toma tu lápiz.',mood:'enfadado'},
+            pasar:{say:'Me lo quedo un ratito, ¿vale?',mood:'contento'},
+            otro:{say:'Toma, perdona, es tuyo.',mood:'arrepentido'}},next:null}
+ }},
+
+{id:'interrumpe',icono:'✋',titulo:'Me interrumpe',habilidad:'Pedir tu turno para hablar',
+ intro:'Ahora vamos a ensayar qué hacer cuando alguien te interrumpe. {avatar} te va a cortar a propósito mientras hablas. Es un juego para practicar.',
+ tip:'Si alguien te interrumpe, puedes decir con calma: «Espera, déjame terminar» o «Estaba hablando yo».',
+ inicio:'a',pasos:{
+  a:{say:'Oye, {nombre}, ¿qué hiciste el fin de semana? Cuéntame.',mood:'neutral',hint:'Cuéntale qué hiciste.',
+     cards:[['Fui al parque'],['Jugué a la consola'],['Estuve en casa con mi familia'],['Fui a ver a mis abuelos']],
+     interrupt:{say:'¡Ah, pues yo fui al cine y vi una peli de superhéroes buenísima, con explosiones y todo!',mood:'sorprendido'},next:'b'},
+  b:{say:'',hint:'{avatar} te ha cortado. ¿Qué le puedes decir?',
+     cards:[['Espera, déjame terminar','asertivo'],['Perdona, estaba hablando yo','asertivo'],['¡Cállate!','agresivo']],
+     kw:{asertivo:['espera','dejame','terminar','acabar','estaba hablando','no he terminado','un momento','perdona','me has cortado','interrumpido','interrumpes'],agresivo:AGR,pasivo:['vale','bueno','ya','ok','aja','guay']},
+     react:{asertivo:{say:'¡Uy, perdona! Tienes razón, estabas hablando tú. Sigue, que te escucho.',mood:'arrepentido'},
+            agresivo:{say:'Vaya, eso me ha sentado un poco mal. Si me dices «déjame terminar», lo entiendo igual.',mood:'triste'},
+            pasivo:{say:'...y al final el malo se escapaba. ¡Uy! ¿Qué me estabas contando tú?',mood:'confuso'},
+            pasar:{say:'...y al final el malo se escapaba. ¡Uy! ¿Qué me estabas contando tú?',mood:'confuso'},
+            otro:{say:'Perdona, te he cortado. Sigue, sigue.',mood:'arrepentido'}},next:'c'},
+  c:{say:'Entonces, ¿qué hiciste tú?',mood:'neutral',hint:'Ahora sí, cuéntaselo.',
+     cards:[['Fui al parque'],['Jugué a la consola'],['Estuve en casa con mi familia'],['Fui a ver a mis abuelos']],
+     react:{otro:{say:'¡Qué bien! Gracias por contármelo, {nombre}.',mood:'contento'}},next:'d'},
+  d:{say:'Vamos a hacer el trabajo en grupo. ¿Qué parte quieres hacer tú?',mood:'neutral',hint:'Dile qué parte te gustaría hacer.',
+     cards:[['Yo hago los dibujos'],['Yo busco la información'],['Yo escribo el texto']],
+     interrupt:{say:'¡No, no! Ya lo decido yo: tú haces la portada y ya está.',mood:'burlon'},next:'e'},
+  e:{say:'',hint:'{avatar} no te ha dejado terminar y ha decidido por ti.',
+     cards:[['Espera, yo también quiero opinar','asertivo'],['Prefiero hacer otra parte','asertivo'],['Siempre igual, eres un pesado','agresivo']],
+     kw:{agresivo:AGR.concat(['pesado','siempre igual']),asertivo:['espera','opinar','prefiero','yo quiero','tambien','me gustaria','podemos','juntos','dejame','decidir'],pasivo:['vale','bueno','ok','como quieras','ya']},
+     react:{asertivo:{say:'Tienes razón, lo tenemos que decidir entre los dos. Haz tú la parte que has dicho.',mood:'arrepentido'},
+            agresivo:{say:'Bueno, vale, no te pongas así... Lo decidimos juntos.',mood:'triste'},
+            pasivo:{say:'¡Perfecto! Pues tú la portada.',mood:'contento'},
+            pasar:{say:'¡Perfecto! Pues tú la portada.',mood:'contento'},
+            otro:{say:'Vale, vale, lo hablamos entre los dos.',mood:'neutral'}},next:null}
+ }},
+
+{id:'insulta',icono:'🛡️',titulo:'Me dice cosas feas',habilidad:'Responder cuando alguien te falta al respeto',
+ intro:'Ahora {avatar} va a hacer como que se porta mal y te dice cosas feas. ¡Es teatro! No lo piensa de verdad. Vamos a ensayar qué puedes hacer. Si quieres parar, pulsa «Descanso».',
+ tip:'Si alguien te insulta puedes decir «No me gusta que me hables así», alejarte o contárselo a un adulto. Insultar de vuelta suele empeorarlo. Quedarte callado también está bien si luego buscas ayuda.',
+ inicio:'a',pasos:{
+  a:{say:{suave:'Jajaja, {nombre}, qué raro eres. Nunca hablas.',medio:'Eh, {nombre}, eres un bicho raro. Ni siquiera hablas.'},mood:'burlon',hint:'¿Qué puedes hacer?',
+     cards:insCards('Raro tú'),kw:INS_KW,react:insReact('¿Ah, sí? Pues tú más.'),next:'b'},
+  b:{say:{suave:'¿Y esa mochila? Es un poco fea, ¿no?',medio:'Qué mochila más horrible llevas. ¿Te la ha elegido tu abuela?'},mood:'burlon',hint:'¿Qué puedes hacer?',
+     cards:insCards('Pues la tuya es peor'),kw:INS_KW,react:insReact('¡Oye, que la mía es chulísima! Ahora me he enfadado yo.'),next:'c'},
+  c:{say:{suave:'Oye, que eres un pesado con tus cosas.',medio:'Eres un pesado. Nadie quiere escuchar tus rollos.'},mood:'burlon',hint:'¿Qué puedes hacer?',
+     cards:insCards('Pesado tú'),kw:INS_KW,react:insReact('¿Ves? Así acabamos los dos enfadados.'),next:'d'},
+  d:{say:'Oye, {nombre}... antes me he pasado contigo. Lo siento mucho.',mood:'arrepentido',hint:'{avatar} te pide perdón.',
+     cards:[['Vale, te perdono','perdona'],['Gracias por pedir perdón','perdona'],['Todavía estoy un poco enfadado','enfadado']],
+     kw:{enfadado:['enfadado','enfadada','molesto','molesta','todavia','aun','sigo'],perdona:['perdono','vale','gracias','no pasa nada','acepto','bueno','tranquilo']},
+     react:{perdona:{say:'Gracias, {nombre}. Eres un buen compañero.',mood:'contento'},
+            enfadado:{say:'Lo entiendo. Cuando quieras, aquí estoy.',mood:'arrepentido'},
+            pasar:{say:'Vale, lo entiendo. Te dejo tranquilo un rato.',mood:'arrepentido'},
+            otro:{say:'Gracias por escucharme.',mood:'contento'}},next:null}
+ }}
+];
+
+/* =========================================================
+   AJUSTES
+   ========================================================= */
+const DEF={nombre:'',avatar:'Leo',voz:'',vel:1,tono:1.15,look:'a',modo:'mixto',intensidad:'suave',autoEscuchar:true,transcripcion:true,escribir:true,espera:3,contadores:true,local:false,escenarios:SCEN.map(s=>s.id)};
+const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+let S=Object.assign({},DEF,store.get('cp_ajustes',{}));
+const LOOKS={a:{hair:'#5a3b22',shirt:'#4f7cac',skin:'#f3c6a1'},b:{hair:'#1f1a17',shirt:'#4c9a6a',skin:'#e2ad85'},c:{hair:'#d9a545',shirt:'#e07b39',skin:'#f6d0b0'},d:{hair:'#3b2416',shirt:'#7b5ea7',skin:'#c98d63'}};
+
+/* =========================================================
+   UTILIDADES
+   ========================================================= */
+const $=s=>document.querySelector(s);
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const norm=s=>' '+String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim()+' ';
+const nombre=()=>S.nombre||'compañero';
+let lastResp='';
+function fill(t){return String(t||'').replace(/\{nombre\}/g,nombre()).replace(/\{avatar\}/g,S.avatar||'Leo').replace(/\{resp\}/g,lastResp||'eso');}
+function line(x){return (x&&typeof x==='object')?(x[S.intensidad]||x.suave):(x||'');}
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(toast._t);toast._t=setTimeout(()=>t.classList.remove('show'),3500);}
+function show(id){['scrHome','scrIntro','scrPlay','scrDebrief','scrEnd'].forEach(s=>$('#'+s).classList.toggle('hidden',s!==id));}
+
+/* =========================================================
+   AVATAR
+   ========================================================= */
+const BROWS={n:['M84 124 Q100 118 116 124','M144 124 Q160 118 176 124'],up:['M84 116 Q100 107 116 115','M144 115 Q160 107 176 116'],
+  angry:['M84 115 Q100 119 117 130','M143 130 Q160 119 176 115'],sad:['M84 128 Q100 122 116 115','M144 115 Q160 122 176 128'],
+  smirk:['M84 114 Q100 106 116 114','M144 127 Q160 123 176 126'],conf:['M84 126 Q100 122 116 126','M144 114 Q160 105 176 112']};
+const MOODS={
+  neutral:{b:'n',m:'M112 200 Q130 210 148 200',f:'none',c:.3},
+  contento:{b:'n',m:'M106 196 Q130 228 154 196 Z',f:'#a34a3c',c:.5},
+  enfadado:{b:'angry',m:'M112 211 Q130 198 148 211',f:'none',c:.55},
+  triste:{b:'sad',m:'M114 211 Q130 202 146 211',f:'none',c:.2},
+  arrepentido:{b:'sad',m:'M114 208 Q130 204 146 208',f:'none',c:.4},
+  confuso:{b:'conf',m:'M112 206 Q121 200 130 206 Q139 212 148 204',f:'none',c:.3},
+  burlon:{b:'smirk',m:'M110 205 Q138 213 154 193',f:'none',c:.3},
+  sorprendido:{b:'up',m:'',f:'none',c:.3,o:true}
+};
+let mood='neutral',talkTimer=null;
+function setMood(m){mood=MOODS[m]?m:'neutral';const d=MOODS[mood];
+  $('#brL').setAttribute('d',BROWS[d.b][0]);$('#brR').setAttribute('d',BROWS[d.b][1]);
+  $('#mouth').setAttribute('d',d.m||'M130 204 L130 204');$('#mouth').setAttribute('fill',d.f);
+  $('#chL').setAttribute('opacity',d.c);$('#chR').setAttribute('opacity',d.c);
+  if(!talkTimer){const o=$('#mouthO');o.setAttribute('opacity',d.o?1:0);o.setAttribute('ry',d.o?10:5);o.setAttribute('rx',d.o?9:13);$('#mouth').style.opacity=d.o?0:1;}
+}
+function talking(on){const o=$('#mouthO');clearInterval(talkTimer);talkTimer=null;
+  if(on){$('#mouth').style.opacity=0;o.setAttribute('opacity',1);o.setAttribute('rx',12);let k=0;
+    talkTimer=setInterval(()=>{k++;o.setAttribute('ry',[3,8,5,9,4,7][k%6]);},110);}
+  else{setMood(mood);}
+}
+function applyLook(){const L=LOOKS[S.look]||LOOKS.a;$('#hair').setAttribute('fill',L.hair);$('#shirt').setAttribute('fill',L.shirt);
+  document.querySelectorAll('#av ellipse[cx="130"][cy="145"]').forEach(e=>e.setAttribute('fill',L.skin));$('#avatarName').textContent=S.avatar||'Leo';}
+setInterval(()=>{const e=$('#eyes');e.classList.add('blink');setTimeout(()=>e.classList.remove('blink'),140);},3800);
+function showBubble(t){const b=$('#bubble');if(t){b.textContent=t;b.classList.remove('hidden');}}
+
+/* =========================================================
+   VOZ DEL COMPAÑERO (síntesis)
+   ========================================================= */
+let voices=[];
+function loadVoices(){try{voices=speechSynthesis.getVoices()}catch(e){voices=[]}fillVoiceSelect();}
+if('speechSynthesis' in window){speechSynthesis.onvoiceschanged=loadVoices;loadVoices();}
+function pickVoice(){if(S.voz){const v=voices.find(v=>v.name===S.voz);if(v)return v;}
+  return voices.find(v=>v.lang==='es-ES'&&/google/i.test(v.name))||voices.find(v=>v.lang==='es-ES')||voices.find(v=>/^es/i.test(v.lang));}
+let avatarLast='';
+function speak(text,m){return new Promise(res=>{
+  if(m)setMood(m);if(text){showBubble(text);avatarLast=text;}
+  if(!text){res();return;}
+  if(!('speechSynthesis' in window)){setTimeout(res,1200+text.length*55);return;}
+  speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(text);const v=pickVoice();
+  if(v){u.voice=v;u.lang=v.lang}else u.lang='es-ES';
+  u.rate=+S.vel;u.pitch=+S.tono;
+  let done=false;const fin=()=>{if(done)return;done=true;clearTimeout(to);talking(false);res();};
+  const to=setTimeout(fin,4000+text.length*110/(+S.vel||1));
+  u.onend=fin;u.onerror=fin;
+  talking(true);speechSynthesis.speak(u);
+});}
+
+/* =========================================================
+   ESCUCHAR AL ALUMNO (reconocimiento)
+   ========================================================= */
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+let rec=null,awaiting=false,micBlocked=false,lastHeard='',intTimer=null,silTimer=null,relisten=0;
+function micUI(state){const b=$('#btnMic');b.classList.toggle('on',state==='on');
+  $('#micStatus').innerHTML=state==='on'?'<b>Te escucho…</b> (también vale en voz bajita)':(state==='idle'?'Tómate tu tiempo. Cuando quieras, pulsa 🎤, toca una tarjeta o escribe.':'');}
+function stopListen(){clearTimeout(intTimer);if(rec){try{rec.onend=null;rec.abort()}catch(e){}rec=null;}micUI('off');}
+function startListen(manual){
+  if(!SR||S.modo==='tarjetas'||!awaiting||micBlocked)return;
+  if(manual)relisten=0;
+  stopListen();
+  rec=new SR();rec.lang='es-ES';rec.interimResults=true;rec.continuous=false;rec.maxAlternatives=1;
+  if(S.local&&('processLocally' in rec)){try{rec.processLocally=true}catch(e){}}
+  let finalTxt='',started=false;lastHeard='';
+  rec.onstart=()=>micUI('on');
+  rec.onresult=e=>{let interim='';for(let i=e.resultIndex;i<e.results.length;i++){const r=e.results[i];if(r.isFinal)finalTxt+=r[0].transcript+' ';else interim+=r[0].transcript;}
+    lastHeard=(finalTxt+interim).trim();
+    if(lastHeard){if(S.transcripcion)$('#interim').textContent='«'+lastHeard+'»';
+      if(!started){started=true;onSpeechStart();}}};
+  rec.onerror=e=>{if(e.error==='not-allowed'||e.error==='service-not-allowed'){micBlocked=true;toast('El micrófono está bloqueado o no disponible. Puedes usar las tarjetas o escribir.');renderCards(curStep());}
+    else if(e.error==='network'){toast('No hay conexión para reconocer la voz. Usa tarjetas o escribe.');}};
+  rec.onend=()=>{rec=null;const t=finalTxt.trim();
+    if(t&&awaiting){respond(t,'voz');}
+    else if(awaiting){
+      if(S.autoEscuchar&&relisten<2&&!micBlocked){relisten++;startListen();}
+      else{micUI('idle');}
+    }};
+  try{rec.start()}catch(e){micUI('idle');}
+}
+function onSpeechStart(){clearSilence();const st=curStep();
+  if(st&&st.interrupt){clearTimeout(intTimer);intTimer=setTimeout(()=>{if(awaiting)respond(lastHeard||'(empezó a hablar)','voz','__int');},1700);}}
+function clearSilence(){clearTimeout(silTimer);}
+const INSISTE=['¿Qué quieres decir?','¿Qué me dices?','¿Y tú qué piensas?','¿Qué me ibas a decir?'];
+let insisted=false,insIdx=0;
+function scheduleSilence(){clearSilence();const secs=+S.espera||0;if(!secs||insisted)return;
+  silTimer=setTimeout(async()=>{
+    if(!awaiting||insisted)return;
+    if(lastHeard)return; // ya ha empezado a hablar
+    insisted=true;const id=runId;stopListen();
+    const q=INSISTE[insIdx++%INSISTE.length];
+    log({avatar:q,respuesta:'(no contesta en '+secs+' s)',canal:'',tipo:'insiste',seg:secs});
+    await speak(q,'confuso');
+    if(id!==runId||!awaiting)return;
+    if(S.autoEscuchar&&SR&&S.modo!=='tarjetas'&&!micBlocked){relisten=0;startListen();}else micUI(SR&&S.modo!=='tarjetas'&&!micBlocked?'idle':'off');
+  },secs*1000);}
+
+/* =========================================================
+   MOTOR DE LA CONVERSACIÓN
+   ========================================================= */
+let queue=[],qi=0,cur={sc:null,key:null},runId=0,askT=0,session=null,cnt={resp:0,voz:0,tarjeta:0,texto:0};
+const curStep=()=>cur.sc?cur.sc.pasos[cur.key]:null;
+
+function classify(text,st){const t=norm(text);if(!st.kw)return 'otro';
+  for(const cat of Object.keys(st.kw)){if(st.kw[cat].some(k=>t.includes(norm(k))))return cat;}
+  return 'otro';}
+
+function renderProgress(){const p=$('#progress');p.innerHTML='';
+  queue.forEach((sc,i)=>{const s=document.createElement('span');s.className='pstep'+(i<qi?' done':'')+(i===qi&&cur.sc?' now':'');s.textContent=sc.icono;s.title=sc.titulo;p.appendChild(s);});}
+function renderCounters(){$('#counters').textContent=S.contadores&&session?`⭐ ${cnt.resp}   🎤 ${cnt.voz}`:'';}
+
+function renderHome(){
+  $('#homeHello').textContent=S.nombre?`¡Hola, ${S.nombre}!`:'¡Hola!';
+  const ag=$('#agenda');ag.innerHTML='<div class="muted" style="background:none;padding:0">Hoy vamos a practicar:</div>';
+  SCEN.filter(s=>S.escenarios.includes(s.id)).forEach((s,i)=>{const d=document.createElement('div');d.innerHTML=`<span class="ic">${s.icono}</span><span><b>${i+1}. ${s.titulo}</b><br><span class="muted">${s.habilidad}</span></span>`;ag.appendChild(d);});
+  const notes=[];
+  if(!SR&&S.modo!=='tarjetas')notes.push('Este navegador no reconoce la voz. Abre la página en <b>Google Chrome</b> para poder hablar; mientras, se puede responder con tarjetas o escribiendo.');
+  if(!('speechSynthesis' in window))notes.push('Este navegador no puede leer en voz alta: el compañero solo hablará con bocadillos.');
+  if(!S.nombre)notes.push('Consejo para el profesor: mantén pulsado ⚙️ para poner el nombre del alumno y ajustar la sesión.');
+  const n=$('#supportNote');n.innerHTML=notes.join('<br>');n.classList.toggle('hidden',!notes.length);
+  $('#btnStart').disabled=!SCEN.some(s=>S.escenarios.includes(s.id));
+  setMood('contento');showBubble(`¡Hola! Soy ${S.avatar||'Leo'}.`);
+}
+
+function startSession(){
+  queue=S.escenarios.map(id=>SCEN.find(s=>s.id===id)).filter(Boolean);qi=0;
+  cnt={resp:0,voz:0,tarjeta:0,texto:0};
+  session={fecha:new Date().toISOString(),alumno:S.nombre||'(sin nombre)',modo:S.modo,entradas:[]};
+  const all=store.get('cp_sesiones',[]);all.unshift(session);store.set('cp_sesiones',all.slice(0,60));
+  // desbloquea audio en un gesto del usuario
+  if('speechSynthesis' in window){try{speechSynthesis.cancel();}catch(e){}}
+  renderCounters();showIntro();
+}
+function saveSession(){const all=store.get('cp_sesiones',[]);const i=all.findIndex(s=>s.fecha===session.fecha);if(i>=0)all[i]=session;else all.unshift(session);store.set('cp_sesiones',all.slice(0,60));}
+function log(e){if(!session)return;session.entradas.push(Object.assign({hora:new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit',second:'2-digit'}),situacion:cur.sc?cur.sc.titulo:''},e));saveSession();}
+
+function showIntro(){const sc=queue[qi];cur={sc,key:null};runId++;
+  $('#introN').textContent=`Situación ${qi+1} de ${queue.length}`;$('#introTitle').textContent=sc.icono+' '+sc.titulo;
+  $('#introSkill').textContent='Vamos a practicar: '+sc.habilidad.toLowerCase();$('#introText').textContent=fill(sc.intro);
+  $('#bubble').classList.add('hidden');setMood('neutral');renderProgress();show('scrIntro');}
+
+async function playStep(key){
+  cur.key=key;const st=curStep();const id=++runId;
+  awaiting=false;stopListen();clearSilence();
+  show('scrPlay');renderProgress();
+  $('#hint').textContent='';$('#cards').innerHTML='';$('#interim').textContent='';$('#studentBubble').classList.add('hidden');micUI('off');
+  $('#typeForm').classList.toggle('hidden',!S.escribir);
+  $('#micZone').classList.toggle('hidden',!SR||S.modo==='tarjetas'||micBlocked);
+  const text=fill(line(st.say));
+  if(text){await sleep(350);if(id!==runId)return;await speak(text,st.mood||'neutral');if(id!==runId)return;}
+  awaitResponse(st);
+}
+function awaitResponse(st){
+  awaiting=true;askT=Date.now();relisten=0;insisted=false;lastHeard='';
+  $('#hint').textContent=fill(st.hint||'');renderCards(st);
+  if(S.autoEscuchar&&SR&&S.modo!=='tarjetas'&&!micBlocked)startListen();else micUI(SR&&S.modo!=='tarjetas'&&!micBlocked?'idle':'off');
+  scheduleSilence();
+}
+function renderCards(st){const box=$('#cards');box.innerHTML='';if(!st)return;
+  const asIdeas=S.modo==='voz'&&SR&&!micBlocked;
+  const lbl=document.createElement('div');lbl.className='cardlbl';lbl.textContent=asIdeas?'Ideas para decir en voz alta':'Puedes decir o tocar';box.appendChild(lbl);
+  (st.cards||[]).forEach(([txt,cat])=>{const b=document.createElement('button');b.type='button';b.className='card'+(asIdeas?' idea':'');b.textContent=fill(txt);
+    if(!asIdeas)b.onclick=()=>respond(fill(txt),cat==='gesto'?'gesto':'tarjeta',cat||'otro');box.appendChild(b);});
+  const p=document.createElement('button');p.type='button';p.className='card pass';p.textContent='🤐 Prefiero no decir nada';p.onclick=()=>respond('(prefiere no decir nada)','tarjeta','pasar');box.appendChild(p);
+}
+
+async function respond(text,canal,forced){
+  if(!awaiting)return;awaiting=false;stopListen();clearSilence();
+  const st=curStep(),id=runId,lat=((Date.now()-askT)/1000).toFixed(1);
+  const sb=$('#studentBubble');sb.innerHTML='';sb.appendChild(document.createTextNode(text));
+  const sm=document.createElement('small');sm.textContent={voz:'🎤 dicho en voz alta',tarjeta:'👆 tarjeta',texto:'⌨️ escrito',gesto:'👋 gesto'}[canal]||'';sb.appendChild(sm);sb.classList.remove('hidden');
+  $('#cards').innerHTML='';$('#hint').textContent='';
+  if(forced!=='pasar'){cnt.resp++;if(canal==='voz')cnt.voz++;else if(canal==='texto')cnt.texto++;else cnt.tarjeta++;}
+  renderCounters();
+  lastResp=(canal==='gesto'||forced==='pasar')?'':String(text).replace(/[.!¡¿?]+$/,'').slice(0,40);
+
+  if(st.interrupt){
+    log({avatar:avatarLast,respuesta:text,canal,tipo:'interrumpido',seg:lat});
+    if(canal!=='voz')await sleep(900);if(id!==runId)return;
+    await speak(fill(st.interrupt.say),st.interrupt.mood);if(id!==runId)return;
+    log({avatar:fill(st.interrupt.say),respuesta:'—',canal:'',tipo:'(interrupción)',seg:''});
+    return go(st.next);
+  }
+  const cat=(forced&&forced!=='__int')?forced:classify(text,st);
+  const r=(st.react&&(st.react[cat]||(cat==='pasar'&&st.react.pasivo)||st.react.otro))||{say:'¡Vale!',mood:'contento'};
+  log({avatar:avatarLast,respuesta:text,canal,tipo:cat,seg:lat});
+  await sleep(500);if(id!==runId)return;
+  await speak(fill(r.say),r.mood);if(id!==runId)return;
+  go(r.next!==undefined?r.next:st.next);
+}
+async function go(next){const id=runId;await sleep(700);if(id!==runId)return;if(next)playStep(next);else debrief();}
+
+async function debrief(){const sc=cur.sc;runId++;const id=runId;
+  $('#tipText').textContent='💡 '+fill(sc.tip);document.querySelectorAll('#feel button').forEach(b=>b.classList.remove('sel'));
+  show('scrDebrief');await speak('Un consejo: '+fill(sc.tip),'contento');}
+function nextScenario(){qi++;if(qi<queue.length)showIntro();else endSession();}
+async function endSession(){cur={sc:null,key:null};runId++;renderProgress();
+  const sit=queue.length;
+  $('#summary').innerHTML=`<div><b>${sit}</b>situaciones</div><div><b>${cnt.resp}</b>respuestas ⭐</div><div><b>${cnt.voz}</b>en voz alta 🎤</div><div><b>${cnt.tarjeta}</b>con tarjeta 👆</div>${S.escribir?`<div><b>${cnt.texto}</b>escritas ⌨️</div>`:''}`;
+  show('scrEnd');log({avatar:'(fin de la sesión)',respuesta:'',canal:'',tipo:'fin',seg:''});
+  await speak(`¡Muy bien, ${nombre()}! Hoy hemos practicado mucho. ¡Hasta la próxima!`,'contento');}
+
+/* =========================================================
+   EVENTOS
+   ========================================================= */
+$('#btnStart').onclick=startSession;
+$('#btnGo').onclick=()=>playStep(cur.sc.inicio);
+$('#btnReadIntro').onclick=()=>speak(fill(cur.sc.intro),'neutral');
+$('#btnMic').onclick=()=>{if(!awaiting)return;if(rec){stopListen();micUI('idle');}else startListen(true);};
+$('#btnRepeat').onclick=async()=>{if(!avatarLast)return;const wasAwaiting=awaiting;stopListen();const id=runId;await speak(avatarLast);if(id===runId&&wasAwaiting&&awaiting&&S.autoEscuchar)startListen(true);};
+$('#typeForm').onsubmit=e=>{e.preventDefault();const v=$('#typeInput').value.trim();if(!v||!awaiting)return;$('#typeInput').value='';respond(v,'texto');};
+$('#feel').onclick=e=>{const b=e.target.closest('button');if(!b)return;document.querySelectorAll('#feel button').forEach(x=>x.classList.toggle('sel',x===b));log({avatar:'¿Cómo te has sentido?',respuesta:b.dataset.f,canal:'tarjeta',tipo:'emoción',seg:''});};
+$('#btnNext').onclick=()=>{speechSynthesis&&speechSynthesis.cancel();nextScenario();};
+$('#btnHome').onclick=()=>{session=null;renderCounters();$('#progress').innerHTML='';show('scrHome');renderHome();};
+
+// Descanso
+let breathT=null;
+$('#btnPause').onclick=()=>{runId++;awaiting=false;stopListen();clearSilence();try{speechSynthesis.cancel()}catch(e){}talking(false);
+  $('#pauseOverlay').classList.remove('hidden');let inhale=true;$('#breathTxt').textContent='Coge aire…';
+  clearInterval(breathT);breathT=setInterval(()=>{inhale=!inhale;$('#breathTxt').textContent=inhale?'Coge aire…':'Suelta el aire despacio…';},4000);
+  if(session)log({avatar:'',respuesta:'(pide descanso)',canal:'botón',tipo:'descanso',seg:''});};
+$('#btnResume').onclick=()=>{clearInterval(breathT);$('#pauseOverlay').classList.add('hidden');
+  if(!$('#scrPlay').classList.contains('hidden')&&cur.key){speak('¡Hola otra vez! Seguimos cuando quieras.','contento').then(()=>playStep(cur.key));}};
+
+// Panel del profesor (mantener pulsado)
+let holdT=null;const gear=$('#btnGear');
+const holdStart=e=>{e.preventDefault();gear.classList.add('holding');holdT=setTimeout(()=>{gear.classList.remove('holding');openTeacher();},1400);};
+const holdEnd=()=>{gear.classList.remove('holding');clearTimeout(holdT);};
+gear.addEventListener('pointerdown',holdStart);['pointerup','pointerleave','pointercancel'].forEach(ev=>gear.addEventListener(ev,holdEnd));
+gear.addEventListener('click',()=>{if(!$('#teacher').classList.contains('hidden'))return;toast('Mantén pulsado el engranaje para abrir el panel del profesor.');});
+
+function fillVoiceSelect(){const sel=$('#tVoz');if(!sel)return;const es=voices.filter(v=>/^es/i.test(v.lang));
+  sel.innerHTML='<option value="">Automática (español de España)</option>'+es.map(v=>`<option value="${v.name.replace(/"/g,'&quot;')}">${v.name} · ${v.lang}</option>`).join('');sel.value=S.voz||'';}
+function openTeacher(){
+  $('#tNombre').value=S.nombre;$('#tAvatar').value=S.avatar;fillVoiceSelect();
+  $('#tVel').value=S.vel;$('#tVelV').textContent=S.vel;$('#tTono').value=S.tono;$('#tTonoV').textContent=S.tono;
+  $('#tLook').value=S.look;$('#tModo').value=S.modo;$('#tInt').value=S.intensidad;
+  $('#tAuto').checked=S.autoEscuchar;$('#tTrans').checked=S.transcripcion;$('#tEscr').checked=S.escribir;$('#tEspera').value=String(S.espera);$('#tCont').checked=S.contadores;$('#tLocal').checked=S.local;
+  renderScenList();renderSessions();$('#teacher').classList.remove('hidden');}
+let order=[];
+function renderScenList(){order=S.escenarios.slice().concat(SCEN.map(s=>s.id).filter(id=>!S.escenarios.includes(id)));
+  const box=$('#tScen');box.innerHTML='';
+  order.forEach((id,i)=>{const s=SCEN.find(x=>x.id===id);const l=document.createElement('label');
+    l.innerHTML=`<input type="checkbox" data-id="${id}" ${S.escenarios.includes(id)?'checked':''}> ${s.icono} <b>${s.titulo}</b> <span class="muted">— ${s.habilidad}</span>
+      <span style="margin-left:auto;display:flex;gap:4px"><button type="button" data-up="${i}" class="soft" style="padding:2px 10px">↑</button><button type="button" data-down="${i}" class="soft" style="padding:2px 10px">↓</button></span>`;
+    box.appendChild(l);});}
+$('#tScen').onclick=e=>{const u=e.target.dataset.up,d=e.target.dataset.down;if(u===undefined&&d===undefined)return;e.preventDefault();
+  const checked=[...document.querySelectorAll('#tScen input')].filter(c=>c.checked).map(c=>c.dataset.id);
+  const i=+(u!==undefined?u:d),j=u!==undefined?i-1:i+1;if(j<0||j>=order.length)return;[order[i],order[j]]=[order[j],order[i]];
+  S.escenarios=order.filter(id=>checked.includes(id));renderScenList();};
+$('#tVel').oninput=e=>$('#tVelV').textContent=e.target.value;$('#tTono').oninput=e=>$('#tTonoV').textContent=e.target.value;
+function readTeacher(){S.nombre=$('#tNombre').value.trim();S.avatar=$('#tAvatar').value.trim()||'Leo';S.voz=$('#tVoz').value;S.vel=+$('#tVel').value;S.tono=+$('#tTono').value;
+  S.look=$('#tLook').value;S.modo=$('#tModo').value;S.intensidad=$('#tInt').value;S.autoEscuchar=$('#tAuto').checked;S.transcripcion=$('#tTrans').checked;
+  S.escribir=$('#tEscr').checked;S.espera=+$('#tEspera').value;S.contadores=$('#tCont').checked;S.local=$('#tLocal').checked;
+  const checked=[...document.querySelectorAll('#tScen input')].filter(c=>c.checked).map(c=>c.dataset.id);S.escenarios=order.filter(id=>checked.includes(id));}
+$('#tSave').onclick=()=>{readTeacher();store.set('cp_ajustes',S);applyLook();renderCounters();if(!$('#scrHome').classList.contains('hidden'))renderHome();toast('Ajustes guardados');};
+$('#tClose').onclick=()=>{$('#teacher').classList.add('hidden');};
+$('#tTestVoice').onclick=()=>{readTeacher();applyLook();speak(`Hola, soy ${S.avatar}. Así sueno yo.`,'contento');};
+$('#tTestMic').onclick=()=>{if(!SR){$('#tMsg').textContent='Este navegador no tiene reconocimiento de voz. Usa Google Chrome.';return;}
+  const r=new SR();r.lang='es-ES';r.interimResults=false;$('#tMsg').textContent='🎤 Di algo…';
+  r.onresult=e=>{$('#tMsg').textContent='He entendido: «'+e.results[0][0].transcript+'»';};
+  r.onerror=e=>{$('#tMsg').textContent='Error del micrófono: '+e.error+(e.error==='not-allowed'?' (permite el micrófono en el candado de la barra de direcciones)':'');};
+  r.onend=()=>{if($('#tMsg').textContent==='🎤 Di algo…')$('#tMsg').textContent='No he oído nada. Prueba otra vez.';};try{r.start()}catch(e){}};
+$('#tLocalCheck').onclick=async()=>{const m=$('#tMsg');
+  if(!SR||typeof SR.available!=='function'){m.textContent='Esta versión de Chrome no permite reconocimiento en el propio equipo. Se usará el servicio de Google.';return;}
+  try{let st=await SR.available({langs:['es-ES'],processLocally:true});
+    if(st==='downloadable'){m.textContent='Descargando el modelo de español…';const ok=await SR.install({langs:['es-ES'],processLocally:true});st=ok?'available':'unavailable';}
+    m.textContent=st==='available'?'✅ El reconocimiento en el propio equipo está disponible. Marca la casilla y guarda.':'No está disponible en este equipo ('+st+'). Se usará el servicio de Google.';
+  }catch(e){m.textContent='No se ha podido comprobar: '+e.message;}};
+
+// Registro
+function sessions(){return store.get('cp_sesiones',[]);}
+function renderSessions(){const sel=$('#tSess');const all=sessions();
+  sel.innerHTML=all.length?all.map((s,i)=>`<option value="${i}">${new Date(s.fecha).toLocaleString('es-ES',{dateStyle:'short',timeStyle:'short'})} · ${s.alumno} (${s.entradas.length})</option>`).join(''):'<option>Sin sesiones</option>';
+  renderLog();}
+function selSession(){return sessions()[+$('#tSess').value]||null;}
+function renderLog(){const s=selSession();const tb=$('#tLog');tb.innerHTML='';if(!s){$('#tStats').textContent='';return;}
+  const resp=s.entradas.filter(e=>e.canal&&!['emoción','descanso','fin','(interrupción)'].includes(e.tipo));
+  const voz=resp.filter(e=>e.canal==='voz').length,pas=resp.filter(e=>e.tipo==='pasar').length,lat=resp.filter(e=>e.seg).map(e=>+e.seg);
+  $('#tStats').textContent=`Respuestas: ${resp.length} · en voz alta: ${voz} · «prefiero no decir nada»: ${pas} · tiempo medio de respuesta: ${lat.length?(lat.reduce((a,b)=>a+b,0)/lat.length).toFixed(1):'–'} s · modo: ${s.modo||''}`;
+  s.entradas.forEach(e=>{const tr=document.createElement('tr');
+    [e.hora,e.situacion,e.avatar,e.respuesta,e.canal,e.tipo,e.seg].forEach((v,i)=>{const td=document.createElement('td');td.textContent=v||'';if(i===5)td.className='c-'+v;tr.appendChild(td);});tb.appendChild(tr);});}
+$('#tSess').onchange=renderLog;
+function csv(s){const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
+  return ['fecha;alumno;hora;situacion;dijo_compañero;respuesta;canal;tipo;segundos'].concat(s.entradas.map(e=>[s.fecha.slice(0,10),s.alumno,e.hora,e.situacion,e.avatar,e.respuesta,e.canal,e.tipo,String(e.seg||'').replace('.',',')].map(q).join(';'))).join('\r\n');}
+$('#tCsv').onclick=()=>{const s=selSession();if(!s)return;const blob=new Blob(['﻿'+csv(s)],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`practica_${(s.alumno||'alumno').replace(/\W+/g,'_')}_${s.fecha.slice(0,10)}.csv`;document.body.appendChild(a);a.click();a.remove();};
+$('#tCopy').onclick=async()=>{const s=selSession();if(!s)return;try{await navigator.clipboard.writeText(csv(s).replace(/;/g,'\t'));toast('Registro copiado: pégalo en una hoja de cálculo');}catch(e){toast('No se ha podido copiar');}};
+$('#tDel').onclick=()=>{const b=$('#tDel');if(b.dataset.c!=='1'){b.dataset.c='1';b.textContent='¿Seguro? Pulsa otra vez';setTimeout(()=>{b.dataset.c='';b.textContent='Borrar todo el registro';},4000);return;}
+  store.set('cp_sesiones',[]);b.dataset.c='';b.textContent='Borrar todo el registro';renderSessions();toast('Registro borrado');};
+
+/* INICIO */
+applyLook();renderHome();
+</script>
+</body>
+</html>
